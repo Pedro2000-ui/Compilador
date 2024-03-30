@@ -23,6 +23,13 @@ typedef struct {
     char* valor;
 } Token;
 
+void * liberaToken(Token token) {
+    if(token.valor != NULL) {
+        free(token.valor);
+    }
+}
+
+
 Token classificaToken(FILE* arquivo) {
     Token token;
 
@@ -37,6 +44,39 @@ Token classificaToken(FILE* arquivo) {
     if (c == EOF) {
         token.tipo = TOKEN_EOF;
         token.valor = NULL;
+        return token;
+    }
+    
+    // Verifica se é uma Letra
+    if(isalpha(c)) {
+        token.tipo = TOKEN_ID;
+        // Aloco na memória 2 espaços (1 para o valor de C e outro para o terminador da string)
+        token.valor = (char *) malloc(2);
+        token.valor[0] = c;
+        token.valor[1] = '\0';
+        
+        // Atualizo C, andando para o próximo caractere
+        c = fgetc(arquivo);
+        // Inicia em 2, pois token.valor já tem duas posições inicialmente (0 e 1)
+        int i = 2;
+
+        // Caso comece por uma letra, será uma variável (TOKEN_ID) e por regra pode vir seguida de mais letras ou números (exemplo: xx, x45, a2b)
+        // Então faço a verificação sobre os próximos digitos (irá parar quando encontrar algo diferente de um número ou letra)
+        while(c != EOF && isalnum(c)) {
+            int aux;
+            char *temp = (char *) realloc(token.valor, i + 1); // Realoca a memória dando espaço para o próximo caractere
+            if (temp == NULL) {
+                // Tratar erro de alocação
+                printf("Erro ao alocar memória\n");
+                liberaToken(token); // Libera a memória alocada anteriormente
+                exit(1);
+            }
+            token.valor = temp;
+            token.valor[--i] = c;
+            token.valor[++i] = '\0';
+
+            c = fgetc(arquivo); 
+        }
         return token;
     }
 
@@ -67,12 +107,6 @@ Token classificaToken(FILE* arquivo) {
     return token;
 }
 
-void * liberaToken(Token token) {
-    if(token.valor != NULL) {
-        free(token.valor);
-    }
-}
-
 int main() {
     // Transcreve para a variável o que se encontra no arquivo de texto
     FILE* arquivo = fopen("Lexer.txt", "r");
@@ -95,7 +129,7 @@ int main() {
                 printf("Numero: %s\n", token.valor);
                 break;
             case TOKEN_PLUS:
-                printf("Operador de adicao %d\n", token.tipo);
+                printf("Operador de adicao \n");
                 break;
             case TOKEN_MINUS:
                 printf("Operador de subtracao\n");
