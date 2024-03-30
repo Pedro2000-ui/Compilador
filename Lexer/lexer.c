@@ -47,8 +47,9 @@ Token classificaToken(FILE* arquivo) {
         return token;
     }
     
-    // Verifica se é uma Letra
-    if(isalpha(c)) {
+    // Verifica se é uma Letra (retorna 1 caso seja uma letra do alfabeto ou 0 caso não esteja no alfabeto.)
+    if(c != EOF && isalpha(c)) {
+        // Caso comece por uma letra, será uma variável (TOKEN_ID) e por regra pode vir seguida de mais letras ou números (exemplo: xx, x45, a2b)
         token.tipo = TOKEN_ID;
         // Aloco na memória 2 espaços (1 para o valor de C e outro para o terminador da string)
         token.valor = (char *) malloc(2);
@@ -60,10 +61,8 @@ Token classificaToken(FILE* arquivo) {
         // Inicia em 2, pois token.valor já tem duas posições inicialmente (0 e 1)
         int i = 2;
 
-        // Caso comece por uma letra, será uma variável (TOKEN_ID) e por regra pode vir seguida de mais letras ou números (exemplo: xx, x45, a2b)
-        // Então faço a verificação sobre os próximos digitos (irá parar quando encontrar algo diferente de um número ou letra)
+        // Faço a verificação sobre os próximos digitos (irá parar quando encontrar algo diferente de um número ou letra)
         while(c != EOF && isalnum(c)) {
-            int aux;
             char *temp = (char *) realloc(token.valor, i + 1); // Realoca a memória dando espaço para o próximo caractere
             if (temp == NULL) {
                 // Tratar erro de alocação
@@ -75,9 +74,41 @@ Token classificaToken(FILE* arquivo) {
             token.valor[--i] = c;
             token.valor[++i] = '\0';
 
+            // Atualizo C, andando para o próximo caractere
             c = fgetc(arquivo); 
+
+            // Atualizo a variável i
+            i++;
         }
         return token;
+    }
+
+    // Verifico se é um número
+    if(c != EOF && isdigit(c)) {
+        token.tipo = TOKEN_NUMBER;
+        token.valor = (char *) malloc(2);
+        token.valor[0] = c;
+        token.valor[1] = '\0';
+
+        int i = 2;
+        // Atualizo C, andando para o próximo caractere
+        c = fgetc(arquivo);
+
+        // um número só pode ser seguido de números
+        while(c != EOF && isdigit(c)) {
+            char* temp = realloc(token.valor, i+1);
+            token.valor = temp;
+            token.valor[--i] = c;
+            token.valor[++i] = '\0';
+
+            // Atualizo C, andando para o próximo caractere
+            c = fgetc(arquivo);
+
+            // Atualizo a variável i
+            i++;
+        }
+        return token;
+
     }
 
     switch (c) {
