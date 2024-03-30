@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <ctype.h>
+#include <ctype.h> //https://petbcc.ufscar.br/ctypefuncoes/
 #include <string.h>
 
 // Identificações possíveis, atribuindo ao respectivo token (Tipo do Token)
@@ -13,6 +13,7 @@ typedef enum {
     TOKEN_MULTIPLY, // Símbolo de Multiplicação
     TOKEN_LPAREN, // Abertura de Parentese
     TOKEN_RPAREN, // Fechamento de Parentese
+    TOKEN_ASSIGNMENT, // Símbolo de atribuição
     TOKEN_EOF, // Fim do Arquivo
     TOKEN_ERROR // Qualquer outra coisa que não se encaixe nas definições acima
 } TokenTipo;
@@ -36,11 +37,11 @@ Token classificaToken(FILE* arquivo) {
     // Guarda na variável o código ASCII do caracter lido, ou EOF caso o arquivo tenha acabado
     int c = fgetc(arquivo);
 
-    // Enquanto c tiver o código ASCII referente a espaços vazios, vamos pulando e lendo até aparecer um caracter diferente de vazio
-    while (c == 32) {
+    // Enquanto c tiver o código ASCII referente a espaços vazios, tabulação, quebra de linha, etc vamos pulando e lendo até aparecer um caracter válido
+    while (isspace(c)) {
         c = fgetc(arquivo);
     }
-
+    
     if (c == EOF) {
         token.tipo = TOKEN_EOF;
         token.valor = NULL;
@@ -48,7 +49,7 @@ Token classificaToken(FILE* arquivo) {
     }
     
     // Verifica se é uma Letra (retorna 1 caso seja uma letra do alfabeto ou 0 caso não esteja no alfabeto.)
-    if(c != EOF && isalpha(c)) {
+    if(isalpha(c)) {
         // Caso comece por uma letra, será uma variável (TOKEN_ID) e por regra pode vir seguida de mais letras ou números (exemplo: xx, x45, a2b)
         token.tipo = TOKEN_ID;
         // Aloco na memória 2 espaços (1 para o valor de C e outro para o terminador da string)
@@ -84,7 +85,7 @@ Token classificaToken(FILE* arquivo) {
     }
 
     // Verifico se é um número
-    if(c != EOF && isdigit(c)) {
+    if(isdigit(c)) {
         token.tipo = TOKEN_NUMBER;
         token.valor = (char *) malloc(2);
         token.valor[0] = c;
@@ -129,6 +130,9 @@ Token classificaToken(FILE* arquivo) {
             break;
         case 41:
             token.tipo = TOKEN_RPAREN;
+            break;
+        case 61:
+            token.tipo = TOKEN_ASSIGNMENT;
             break;
         default:
             token.tipo = TOKEN_ERROR;
@@ -176,6 +180,9 @@ int main() {
                 break;
             case TOKEN_RPAREN:
                 printf("Parentese direito \n");
+                break;
+            case TOKEN_ASSIGNMENT:
+                printf("Atribuicao \n");
                 break;
             case TOKEN_EOF:
                 printf("Fim do arquivo\n");
