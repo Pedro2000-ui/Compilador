@@ -183,47 +183,47 @@ int main() {
         switch (token.tipo) {
             case TOKEN_ID:
                 // Identificador de Variável
-                fprintf(arquivoParser, "%s%s%s", "TOKEN_ID (", token.valor, ")\n");
+                fprintf(arquivoParser, "%s%s%s", "TOKEN_ID(", token.valor, ")>\n");
                 break;
             case TOKEN_NUMBER:
                 // Identificador de Números
-                fprintf(arquivoParser, "%s%s%s", "TOKEN_NUMBER (", token.valor, ")\n");
+                fprintf(arquivoParser, "%s%s%s", "TOKEN_NUMBER(", token.valor, ")>\n");
                 break;
             case TOKEN_PLUS:
                 // Operador de Soma
-                fprintf(arquivoParser, "%s", "TOKEN_PLUS\n");
+                fprintf(arquivoParser, "%s", "TOKEN_PLUS>\n");
                 break;
             case TOKEN_MINUS:
                 // Operador de Subtração 
-                fprintf(arquivoParser, "%s", "TOKEN_MINUS\n");
+                fprintf(arquivoParser, "%s", "TOKEN_MINUS>\n");
                 break;
             case TOKEN_MULTIPLY:
                 // Operador de Multiplicação
-                fprintf(arquivoParser, "%s", "TOKEN_MULTIPLY\n");
+                fprintf(arquivoParser, "%s", "TOKEN_MULTIPLY>\n");
                 break;
             case TOKEN_DIVIDE:
                 // Operador de divisão
-                fprintf(arquivoParser, "%s", "TOKEN_DIVIDE\n");
+                fprintf(arquivoParser, "%s", "TOKEN_DIVIDE>\n");
                 break;
             case TOKEN_LPAREN:
                 // Parentese esquerdo
-                fprintf(arquivoParser, "%s", "TOKEN_LPAREN\n");
+                fprintf(arquivoParser, "%s", "TOKEN_LPAREN>\n");
                 break;
             case TOKEN_RPAREN:
                 // Parentese direito
-                fprintf(arquivoParser, "%s", "TOKEN_RPAREN\n");
+                fprintf(arquivoParser, "%s", "TOKEN_RPAREN>\n");
                 break;
             case TOKEN_ASSIGNMENT:
                 // Atribuicao
-                fprintf(arquivoParser, "%s", "TOKEN_ASSIGNMENT\n");
+                fprintf(arquivoParser, "%s", "TOKEN_ASSIGNMENT>\n");
                 break;
             case TOKEN_SEMICOLON:
                 // Fim do arquivo
-                fprintf(arquivoParser, "%s", "TOKEN_SEMICOLON\n");
+                fprintf(arquivoParser, "%s", "TOKEN_SEMICOLON>\n");
                 break;
             case TOKEN_EOF:
                 // Fim do arquivo
-                fprintf(arquivoParser, "%s", "TOKEN_EOF");
+                fprintf(arquivoParser, "%s", "TOKEN_EOF>");
                 break;
             case TOKEN_ERROR:
                 // Caractere não aceito pela linguagem
@@ -231,7 +231,7 @@ int main() {
                 fclose(arquivoParser);
                 // Como encontrou um caractere de erro, eu reabro o arquivo em modo de escrita, com isso o arquivo será "limpo" e ai eu só escrevo o TOKEN_ERROR para facilitar para meu parser
                 arquivoParser = fopen("../Parser/Parser.txt", "w");
-                fprintf(arquivoParser, "%s", "TOKEN_ERROR");
+                fprintf(arquivoParser, "%s", "TOKEN_ERROR-");
                 break;
         }
         liberaToken(token);
