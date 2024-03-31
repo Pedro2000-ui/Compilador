@@ -71,7 +71,8 @@ Token classificaToken(FILE* arquivo) {
                 // Tratar erro de alocação
                 printf("Erro ao alocar memória\n");
                 liberaToken(token); // Libera a memória alocada anteriormente
-                exit(1);
+                token.tipo = TOKEN_ERROR;
+                return token;
             }
             token.valor = temp;
             token.valor[--i] = c;
@@ -84,7 +85,11 @@ Token classificaToken(FILE* arquivo) {
             i++;
         }
         // Se o caractere atual é um espaço, tabulação, quebra de linha ou ";", eu apenas retorno o token
-        if(isspace(c) || c == 59) return token;
+        if(isspace(c) || c == 59) {
+            // Move o ponteiro do arquivo de volta um caractere (faço isso, para que na próxima verificação ele inicie 1 caractere após o final da variável encontrada)
+            fseek(arquivo, -1, SEEK_CUR);
+            return token;
+        }
         // Se for algo diferente disso, retorno um token inválido, já que não obedece a regra de composição de uma variável
         token.tipo = TOKEN_ERROR;
         return token;
@@ -116,7 +121,11 @@ Token classificaToken(FILE* arquivo) {
         }
 
         // Se o caractere atual é um espaço, tabulação, quebra de linha ou ";", eu apenas retorno o token
-        if(isspace(c) || c == 59) return token;
+        if(isspace(c) || c == 59) {
+            // Move o ponteiro do arquivo de volta um caractere (faço isso, para que na próxima verificação ele inicie 1 caractere após o final do número encontrado)
+            fseek(arquivo, -1, SEEK_CUR);
+            return token;
+        }
         // Se for algo diferente disso, retorno um token inválido, já que não obedece a regra de composição de um número
         token.tipo = TOKEN_ERROR;
         return token;
@@ -210,7 +219,7 @@ int main() {
                 break;
             case TOKEN_SEMICOLON:
                 // Fim do arquivo
-                fprintf(arquivoParser, "%s", "TOKEN_SEMICOLON");
+                fprintf(arquivoParser, "%s", "TOKEN_SEMICOLON\n");
                 break;
             case TOKEN_EOF:
                 // Fim do arquivo
@@ -220,8 +229,9 @@ int main() {
                 // Caractere não aceito pela linguagem
                 // Fecho o arquivo anterior
                 fclose(arquivoParser);
-                // Como encontrou um caractere de erro, eu reabro o arquivo em modo de escrita, com isso o arquivo será "limpo"
+                // Como encontrou um caractere de erro, eu reabro o arquivo em modo de escrita, com isso o arquivo será "limpo" e ai eu só escrevo o TOKEN_ERROR para facilitar para meu parser
                 arquivoParser = fopen("../Parser/Parser.txt", "w");
+                fprintf(arquivoParser, "%s", "TOKEN_ERROR");
                 break;
         }
         liberaToken(token);
