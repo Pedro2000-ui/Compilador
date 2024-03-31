@@ -14,8 +14,10 @@ typedef enum {
     TOKEN_LPAREN, // Abertura de Parentese
     TOKEN_RPAREN, // Fechamento de Parentese
     TOKEN_ASSIGNMENT, // Símbolo de atribuição
+    TOKEN_SEMICOLON, // Ponto e vírgula
     TOKEN_EOF, // Fim do Arquivo
     TOKEN_ERROR // Qualquer outra coisa que não se encaixe nas definições acima
+
 } TokenTipo;
 
 // Estrutura de um Token
@@ -81,6 +83,10 @@ Token classificaToken(FILE* arquivo) {
             // Atualizo a variável i
             i++;
         }
+        // Se o caractere atual é um espaço, tabulação, quebra de linha ou ";", eu apenas retorno o token
+        if(isspace(c) || c == 59) return token;
+        // Se for algo diferente disso, retorno um token inválido, já que não obedece a regra de composição de uma variável
+        token.tipo = TOKEN_ERROR;
         return token;
     }
 
@@ -103,11 +109,16 @@ Token classificaToken(FILE* arquivo) {
             token.valor[++i] = '\0';
 
             // Atualizo C, andando para o próximo caractere
-            c = fgetc(arquivo);
+            c = fgetc(arquivo); 
 
             // Atualizo a variável i
             i++;
         }
+
+        // Se o caractere atual é um espaço, tabulação, quebra de linha ou ";", eu apenas retorno o token
+        if(isspace(c) || c == 59) return token;
+        // Se for algo diferente disso, retorno um token inválido, já que não obedece a regra de composição de um número
+        token.tipo = TOKEN_ERROR;
         return token;
 
     }
@@ -134,6 +145,9 @@ Token classificaToken(FILE* arquivo) {
         case 61:
             token.tipo = TOKEN_ASSIGNMENT;
             break;
+        case 59:
+            token.tipo = TOKEN_SEMICOLON;
+            break;
         default:
             token.tipo = TOKEN_ERROR;
             break;
@@ -145,9 +159,10 @@ Token classificaToken(FILE* arquivo) {
 int main() {
     // Transcreve para a variável o que se encontra no arquivo de texto
     FILE* arquivo = fopen("Lexer.txt", "r");
-    
-    if (arquivo == NULL) {
-        perror("Erro ao abrir arquivo de entrada");
+    FILE* arquivoParser = fopen("../Parser/Parser.txt", "w");
+
+    if (arquivo == NULL || arquivoParser == NULL) {
+        perror("Erro ao abrir arquivo de entrada/saida");
         return 1;
     }
 
@@ -158,42 +173,61 @@ int main() {
         
         switch (token.tipo) {
             case TOKEN_ID:
-                printf("Identificador: %s\n", token.valor);
+                // Identificador de Variável
+                fprintf(arquivoParser, "%s%s%s", "TOKEN_ID (", token.valor, ")\n");
                 break;
             case TOKEN_NUMBER:
-                printf("Numero: %s\n", token.valor);
+                // Identificador de Números
+                fprintf(arquivoParser, "%s%s%s", "TOKEN_NUMBER (", token.valor, ")\n");
                 break;
             case TOKEN_PLUS:
-                printf("Operador de adicao \n");
+                // Operador de Soma
+                fprintf(arquivoParser, "%s", "TOKEN_PLUS\n");
                 break;
             case TOKEN_MINUS:
-                printf("Operador de subtracao\n");
+                // Operador de Subtração 
+                fprintf(arquivoParser, "%s", "TOKEN_MINUS\n");
                 break;
             case TOKEN_MULTIPLY:
-                printf("Operador de multiplicacao\n");
+                // Operador de Multiplicação
+                fprintf(arquivoParser, "%s", "TOKEN_MULTIPLY\n");
                 break;
             case TOKEN_DIVIDE:
-                printf("Operador de divisao\n");
+                // Operador de divisão
+                fprintf(arquivoParser, "%s", "TOKEN_DIVIDE\n");
                 break;
             case TOKEN_LPAREN:
-                printf("Parentese esquerdo\n");
+                // Parentese esquerdo
+                fprintf(arquivoParser, "%s", "TOKEN_LPAREN\n");
                 break;
             case TOKEN_RPAREN:
-                printf("Parentese direito \n");
+                // Parentese direito
+                fprintf(arquivoParser, "%s", "TOKEN_RPAREN\n");
                 break;
             case TOKEN_ASSIGNMENT:
-                printf("Atribuicao \n");
+                // Atribuicao
+                fprintf(arquivoParser, "%s", "TOKEN_ASSIGNMENT\n");
+                break;
+            case TOKEN_SEMICOLON:
+                // Fim do arquivo
+                fprintf(arquivoParser, "%s", "TOKEN_SEMICOLON");
                 break;
             case TOKEN_EOF:
-                printf("Fim do arquivo\n");
+                // Fim do arquivo
+                fprintf(arquivoParser, "%s", "TOKEN_EOF");
                 break;
             case TOKEN_ERROR:
-                printf("Erro de token\n");
+                // Caractere não aceito pela linguagem
+                // Fecho o arquivo anterior
+                fclose(arquivoParser);
+                // Como encontrou um caractere de erro, eu reabro o arquivo em modo de escrita, com isso o arquivo será "limpo"
+                arquivoParser = fopen("../Parser/Parser.txt", "w");
                 break;
         }
         liberaToken(token);
     } while (token.tipo != TOKEN_EOF && token.tipo != TOKEN_ERROR);
 
     fclose(arquivo);
+    fclose(arquivoParser);
     return 0;
 }
