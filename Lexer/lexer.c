@@ -75,11 +75,12 @@ Token classificaToken(FILE* arquivo) {
                 return token;
             }
             token.valor = temp;
-            token.valor[--i] = c;
-            token.valor[++i] = '\0';
+            token.valor[i - 1] = c;
+            token.valor[i] = '\0';
 
             // Atualizo C, andando para o próximo caractere
             c = fgetc(arquivo); 
+            
 
             // Atualizo a variável i
             i++;
@@ -110,8 +111,8 @@ Token classificaToken(FILE* arquivo) {
         while(c != EOF && isdigit(c)) {
             char* temp = realloc(token.valor, i+1);
             token.valor = temp;
-            token.valor[--i] = c;
-            token.valor[++i] = '\0';
+            token.valor[i - 1] = c;
+            token.valor[i] = '\0';
 
             // Atualizo C, andando para o próximo caractere
             c = fgetc(arquivo); 
