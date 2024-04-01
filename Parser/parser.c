@@ -36,13 +36,16 @@ void identificaToken(FILE *arquivo)
     string[0] = c;
     string[1] = '\0';
 
-    // Inicia em 2, pois token.valor já tem duas posições inicialmente (0 e 1)
+    // Inicia em 2, pois string já tem duas posições inicialmente (0 e 1)
     int i = 2;
 
     // Enquanto não chegar ao fim do arquivo (EOF) e não encontrar o símbolo que identifica o fim de um token (>) continuamos iterando e contruindo a string
     while ((c = fgetc(arquivo)) != EOF && c != '>')
     {
-
+        /*
+        / Caso encontre um "(" será um TOKEN_ID ou um TOKEN_NUMBER (garanto isso através do LEXER)
+        / itero pelos caracteres que se encontram entre "(" e para guardar como valor do token (sendo ele o valor de uma variável ou de um número) ")"
+        */ 
         if (c == '(')
         {
             c = fgetc(arquivo);
