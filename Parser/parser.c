@@ -3,32 +3,30 @@
 #include <ctype.h> //https://petbcc.ufscar.br/ctypefuncoes/
 #include <string.h>
 
-typedef enum
-{
-    TOKEN_ID,
-    TOKEN_NUMBER,
-    TOKEN_PLUS,
-    TOKEN_MINUS,
-    TOKEN_DIVIDE,
-    TOKEN_MULTIPLY,
-    TOKEN_LPAREN,
-    TOKEN_RPAREN,
-    TOKEN_ASSIGNMENT,
-    TOKEN_SEMICOLON,
-    TOKEN_EOF,
-    TOKEN_ERROR
-} TokenTipo;
-
 typedef struct
 {
-    TokenTipo tipo;
+    char *tipo;
     char *valor;
 } Token;
 
-void identificaToken(FILE *arquivo)
+void liberaToken(Token token)
+{
+    if (token.valor != NULL)
+        free(token.valor);
+    free(token.tipo);
+}
+
+Token identificaToken(FILE *arquivo)
 {
     Token token;
+    token.valor = NULL;
     int c = fgetc(arquivo);
+
+    // Enquanto encontrar caracteres que representem espaços vazios, tabulações etc iremos ignorar
+    while(isspace(c)) {
+        c = fgetc(arquivo);
+    }
+
     // Variável que será usada para construir a string após ler caractere por caractere
     char *string;
 
@@ -44,17 +42,17 @@ void identificaToken(FILE *arquivo)
     {
         /*
         / Caso encontre um "(" será um TOKEN_ID ou um TOKEN_NUMBER (garanto isso através do LEXER)
-        / itero pelos caracteres que se encontram entre "(" e para guardar como valor do token (sendo ele o valor de uma variável ou de um número) ")"
-        */ 
+        / itero pelos caracteres que se encontram entre "(" e ")" para guardar como valor do token (sendo ele o valor de uma variável ou de um número)
+        */
         if (c == '(')
         {
             c = fgetc(arquivo);
-            char* stringValor;
+            char *stringValor;
             stringValor = (char *)malloc(2);
             stringValor[0] = c;
             stringValor[1] = '\0';
             int j = 2;
-            
+
             while ((c = fgetc(arquivo)) != EOF && isalnum(c))
             {
                 char *temp2 = (char *)realloc(stringValor, j + 1);
@@ -64,7 +62,7 @@ void identificaToken(FILE *arquivo)
                     exit(1);
                 }
                 stringValor = temp2;
-                stringValor[j - 1] = c; 
+                stringValor[j - 1] = c;
                 stringValor[j] = '\0';
 
                 j++;
@@ -86,28 +84,40 @@ void identificaToken(FILE *arquivo)
         i++;
     }
 
+    // Verifico se o token encontrado no arquivo .txt representa um token de erro (gerado lá pelo LEXER)
     if (strcmp(string, "TOKEN_ERROR") == 0)
     {
         printf("Erro de Sintaxe (simbolo nao aceito)\n");
         exit(1);
     }
-    // token.tipo = string;
-    printf("%s %s\n", string, token.valor); 
-    free(string);
-    free(token.valor);
+    token.tipo = string;
+    return token;
 }
 
 int main()
 {
+    // Instancia o arquivo onde estarão os Tokens gerados pelo LEXER
     FILE *arquivo = fopen("Parser.txt", "r");
-
+    Token token;
     if (arquivo == NULL)
     {
         perror("Erro ao abrir arquivo de entrada/saída");
         return 1;
     }
 
-    identificaToken(arquivo);
+    int fim = 0;
+    do
+    {
+        token = identificaToken(arquivo);
+        printf("%s %s\n", token.tipo, token.valor);
+
+        // Caso encontre o Token que representa o fim do arquivo
+        if(strcmp(token.tipo, "TOKEN_EOF") == 0) {
+            fim = 1;
+        }
+        liberaToken(token);
+
+    } while (fim != 1);
 
     fclose(arquivo);
     return 0;
